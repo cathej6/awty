@@ -3,14 +3,19 @@ package edu.washington.cathej.arewethereyet;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import static android.R.attr.text;
 
 
 public class MainActivity extends Activity {
@@ -44,6 +49,14 @@ public class MainActivity extends Activity {
                         !timeInterval.getText().toString().equals("") &&
                         Integer.parseInt(timeInterval.getText().toString()) > 0) {
                     Log.i("debug", "Starting alarm");
+
+                    ComponentName receiver = new ComponentName(MainActivity.this, TextReceiver.class);
+                    PackageManager pm = MainActivity.this.getPackageManager();
+
+                    pm.setComponentEnabledSetting(receiver,
+                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                            PackageManager.DONT_KILL_APP);
+
                     alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarmIntent = new Intent(MainActivity.this, TextReceiver.class);
                     alarmIntent.putExtra("phoneNumber", phoneNumber.getText().toString());
@@ -56,15 +69,31 @@ public class MainActivity extends Activity {
                     startStop.setText("Stop");
                     isStart = !isStart;
                 } else if (!isStart) {
+                    ComponentName receiver = new ComponentName(MainActivity.this, TextReceiver.class);
+                    PackageManager pm = MainActivity.this.getPackageManager();
+
+                    pm.setComponentEnabledSetting(receiver,
+                            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                            PackageManager.DONT_KILL_APP);
 
                     Intent newIntent = new Intent(MainActivity.this, TextReceiver.class);
                     PendingIntent newPending = PendingIntent.getBroadcast(MainActivity.this, 0, newIntent, 0);
                     Log.i("debug", "Canceling alarm");
-                    stopService(newIntent);
+                    //stopService(newIntent);
                     alarmManager.cancel(newPending);
 
                     startStop.setText("Start");
                     isStart = !isStart;
+                } else if (message.getText().toString().equals("") ||
+                        phoneNumber.getText().toString().equals("") ||
+                        timeInterval.getText().toString().equals("")) {
+                    String text = "Please fill in all fields to Start";
+                    Toast toast = Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT);
+                    toast.show();
+                } else if (Integer.parseInt(timeInterval.getText().toString()) <= 0) {
+                    String text = "Time Interval must be set to a number greater than 0";
+                    Toast toast = Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT);
+                    toast.show();
                 }
             }
         });
