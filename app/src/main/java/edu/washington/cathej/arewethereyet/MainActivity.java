@@ -15,8 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import static android.R.attr.text;
-
 
 public class MainActivity extends Activity {
 
@@ -39,8 +37,6 @@ public class MainActivity extends Activity {
         phoneNumber = (EditText) findViewById(R.id.phonenumber);
         timeInterval = (EditText) findViewById(R.id.timeinterval);
 
-        //isStart = startStop.getText().toString().equals("Start");
-
         startStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -50,17 +46,11 @@ public class MainActivity extends Activity {
                         Integer.parseInt(timeInterval.getText().toString()) > 0) {
                     Log.i("debug", "Starting alarm");
 
-                    ComponentName receiver = new ComponentName(MainActivity.this, TextReceiver.class);
-                    PackageManager pm = MainActivity.this.getPackageManager();
-
-                    pm.setComponentEnabledSetting(receiver,
-                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                            PackageManager.DONT_KILL_APP);
-
                     alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarmIntent = new Intent(MainActivity.this, TextReceiver.class);
                     alarmIntent.putExtra("phoneNumber", phoneNumber.getText().toString());
-                    alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent, 0);
+                    alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
+                            alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
                     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                             SystemClock.elapsedRealtime() + 100,
@@ -69,15 +59,10 @@ public class MainActivity extends Activity {
                     startStop.setText("Stop");
                     isStart = !isStart;
                 } else if (!isStart) {
-                    ComponentName receiver = new ComponentName(MainActivity.this, TextReceiver.class);
-                    PackageManager pm = MainActivity.this.getPackageManager();
-
-                    pm.setComponentEnabledSetting(receiver,
-                            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                            PackageManager.DONT_KILL_APP);
 
                     Intent newIntent = new Intent(MainActivity.this, TextReceiver.class);
-                    PendingIntent newPending = PendingIntent.getBroadcast(MainActivity.this, 0, newIntent, 0);
+                    PendingIntent newPending = PendingIntent.getBroadcast(MainActivity.this, 0,
+                            newIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                     Log.i("debug", "Canceling alarm");
                     //stopService(newIntent);
                     alarmManager.cancel(newPending);
