@@ -3,10 +3,8 @@ package edu.washington.cathej.arewethereyet;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -49,12 +47,13 @@ public class MainActivity extends Activity {
                     alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarmIntent = new Intent(MainActivity.this, TextReceiver.class);
                     alarmIntent.putExtra("phoneNumber", phoneNumber.getText().toString());
+                    alarmIntent.putExtra("message", message.getText().toString());
                     alarmPendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
                             alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
                     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                             SystemClock.elapsedRealtime() + 100,
-                            6000 * Integer.parseInt(timeInterval.getText().toString()),
+                            60000 * Integer.parseInt(timeInterval.getText().toString()),
                             alarmPendingIntent);
                     startStop.setText("Stop");
                     isStart = !isStart;
@@ -64,7 +63,6 @@ public class MainActivity extends Activity {
                     PendingIntent newPending = PendingIntent.getBroadcast(MainActivity.this, 0,
                             newIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                     Log.i("debug", "Canceling alarm");
-                    //stopService(newIntent);
                     alarmManager.cancel(newPending);
 
                     startStop.setText("Start");
